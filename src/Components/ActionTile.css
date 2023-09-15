@@ -1,0 +1,37 @@
+.action-tile{
+    display: flex;
+    justify-content: center;
+    height: 55px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    
+}
+
+.inner-tile{
+    background-color: #1E1E1E;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    width: 500px;
+    border-radius: 5px;
+    box-shadow: 0px 3px 52px  #6d6c6c8e;
+}
+
+.inner-tile div{
+    color: aliceblue;
+    font-size: 20px;
+    display: flex;
+    padding: 10px;
+    align-items: center;
+}
+
+.inner-tile div:hover{
+    background-color:#3d3b3b;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
+.active{
+    background-color:#3d3b3b;
+}

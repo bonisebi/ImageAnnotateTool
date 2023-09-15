@@ -1,0 +1,18 @@
+
+.canvasContainer{
+max-height: calc(100vh - 100px); 
+overflow: hidden; 
+display: flex;
+justify-content: center;
+
+
+}
+  
+.canvas{
+display: flex; 
+background-color: #1E1E1E;
+
+height: 100%;
+}
+
+  
