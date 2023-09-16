@@ -47,15 +47,13 @@ main{
     right:  10px;
 }
 
-.show{
-    display: flex;
-}
+
 
 .action-btn{
     position: absolute;
     top:3%;
     right: 2%;
-    display: flex;
+    display: none;
     flex-direction: column;
     
 }
@@ -63,7 +61,7 @@ main{
 .action-btn button{
     padding: 10px;
     color: white;
-    border-radius: 15px;
+    border-radius: 5px;
     width: 80px;
     margin-bottom: 10px;
     font-weight: 600;
@@ -72,19 +70,23 @@ main{
     
 }
 
+.show{
+    display: flex;
+}
+
 .save{
-    background-color: #433FF4;
+    background-color: #0089FF;
 }
 
 .save:hover{
-    background-color: #2925f7;
+    background-color: #2326EC;
 }
 
 
 .submit{
-    background-color: #219804;
+    background-color: #00C695;
 }
 
 .submit:hover{
-    background-color: #1b6808;
+    background-color: #00B5AA;
 }

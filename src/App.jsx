@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { IoMdAddCircleOutline } from 'react-icons/io'
-import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai'
+import { AiOutlineLeft, AiOutlineRight, AiOutlineInfoCircle } from 'react-icons/ai'
 
 import Image1 from './assets/Image1.jpg'
 import Image2 from './assets/Image2.jpg'
@@ -12,6 +12,8 @@ import Image5 from './assets/Image5.jpg'
 import './App.css';
 import KonvaCanvas from './Components/KonvaCanvas';
 import ActionTile from './Components/ActionTile';
+import toast, { Toaster } from 'react-hot-toast';
+
 
 function App() {
 
@@ -20,7 +22,7 @@ function App() {
   const [enableResizing, setEnableResizing] = useState(false)
   const [enableDrag, setEnableDrag] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
-
+  const [deleteRectBox, setDeleteRectBox] = useState(false)
   const [imageScale, setImageScale] = useState(1.0);
   const [imageUrl, setImageUrl] = useState(null)
 
@@ -37,12 +39,12 @@ function App() {
 
 
   const uploadImage = () => {
-
+    //Loading the image in to the canvas.
     const image = new Image();
     image.src = imagesList[currentImgIndex];
 
-    image.onerror = (err) => {
-      console.error('Error loading the image.', err.message);
+    image.onerror = () => {
+      toast.error('Error loading the image.');
     };
 
     image.onload = () => {
@@ -64,6 +66,8 @@ function App() {
   }
 
   const navigateImage = (direction) => {
+    //To navigate through the loaded images.
+    //This allows us to work on muliple images.
 
     setResetCanvas(true);
     if (direction === 'prev') {
@@ -82,8 +86,8 @@ function App() {
   }
 
   const getImgAnnotations = (img, rect) => {
+    //Format current drawn rectangle boxes for later use.
     if (imgLoaded) {
-
       imageAnnotationObj.current[`${img.src}`] = []
       rect.forEach(((eachItem) => {
         const x1 = eachItem.x;// left coordinate of the box
@@ -97,38 +101,61 @@ function App() {
   }
 
   const saveBoxCoordinates = () => {
+    //Store the box-Coordinates in browser localstorage
     localStorage.setItem("boxCoordinates", JSON.stringify(imageAnnotationObj.current))
+    toast.success('Box coordinates saved successfully.');
   }
 
   const downloadBoxCoordinates = () => {
-    const boxCoordinates = localStorage.getItem("boxCoordinates");
+    // Download the Saved box-Coordinates as Json file
 
-    const jsonData = `data:text/json;chatset=utf-8,${encodeURIComponent(JSON.stringify(boxCoordinates))}`;
-    const link = document.createElement("a");
-    link.href = jsonData;
-    link.download = "data.json";
-    link.click();
+    const boxCoordinates = localStorage.getItem("boxCoordinates");
+    if (boxCoordinates) {
+      const jsonObject = JSON.parse(boxCoordinates);
+      const formattedJson = JSON.stringify(jsonObject, null, 2);
+      const blob = new Blob([formattedJson], { type: 'application/json' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "data.json";
+      link.click();
+      toast.success('Download request submitted.');
+    } else {
+      toast("No saved coordinates found.", { icon: <AiOutlineInfoCircle />, duration: 1000 })
+    }
+
   }
 
-  useEffect(() => { setIsFirstRender(false) }, [])
-  useEffect(() => { if (!isFirstRender) { uploadImage() } }, [currentImgIndex])
+  useEffect(() => {
+    //For following up the first render as we do not want the canvas to load the image until user clicked.
+    setIsFirstRender(false)
+  }, [])
+
+  useEffect(() => {
+    //To uploadImage to the canvas whenever there is a user navigation through the images.
+    if (!isFirstRender) { uploadImage() }
+  }, [currentImgIndex])
 
   return (
     <main >
+      <Toaster position='top-right' />
       <div className="add-img" onClick={() => uploadImage()}>
-        <span>Click to Add Images</span>
+        <span>Click to Load Images</span>
         <IoMdAddCircleOutline />
       </div>
 
+      {/* Tools tile for the actions */}
       {imgLoaded && (
         <ActionTile
           setResetCanvas={setResetCanvas}
           setEnableResizing={setEnableResizing}
           setEnableDrag={setEnableDrag}
           setImageScale={setImageScale}
-          setEnableDrawing={setEnableDrawing} />
+          setEnableDrawing={setEnableDrawing}
+          setDeleteRectBox={setDeleteRectBox} />
       )}
-
+      {/*Canvas to draw the rectanlges  */}
       <KonvaCanvas
         imageUrl={imageUrl}
         width={canvasWidth}
@@ -138,6 +165,7 @@ function App() {
         enableResizing={enableResizing}
         enableDrag={enableDrag}
         scale={imageScale}
+        deleteRectBox={deleteRectBox}
         saveAnnotations={getImgAnnotations}
         setResetCanvas={() => { setResetCanvas(false) }}
       />
@@ -149,7 +177,7 @@ function App() {
         <AiOutlineRight />
       </div>
 
-      <div className="action-btn">
+      <div className={`action-btn ${imgLoaded ? 'show' : ''}`}>
         <button onClick={saveBoxCoordinates} className='save'>SAVE</button>
         <button onClick={downloadBoxCoordinates} className='submit'>Submit</button>
       </div>

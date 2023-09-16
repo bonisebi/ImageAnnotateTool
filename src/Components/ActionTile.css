@@ -4,6 +4,8 @@
     height: 55px;
     margin-top: 10px;
     margin-bottom: 15px;
+    align-items: center;
+    
     
 }
 
@@ -31,7 +33,53 @@
     border-radius: 5px;
 }
 
+.inner-tile div::title{
+    background-color:red;
+}
 
 .active{
     background-color:#3d3b3b;
 }
+
+.infoIcon {
+    color: rgb(125, 127, 129);
+    margin-left: 20px;
+    font-size: 20px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.info-modal{
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+
+}
+
+.infoIcon .tooltip{
+    background-color: #7e7979;
+    padding: 5px 10px;
+    border: #1E1E1E;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: aliceblue;
+    border-radius: 5px;
+    margin-left: 10px;
+    width: 150px;
+    font-size: 12px;
+    position: absolute;
+    left:  90% ;
+    z-index: 3;
+    opacity: 0; 
+    animation: hideTooltip 5s forwards;
+}
+
+@keyframes hideTooltip {
+    0%{ opacity: 0;}
+    50%{ opacity: 1; }
+    100%{ opacity: 0;}   
+  }
+
+  

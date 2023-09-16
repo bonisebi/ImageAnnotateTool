@@ -15,6 +15,7 @@ const KonvaCanvas = (props) => {
         width,
         height,
         enableDrag,
+        deleteRectBox = false,
         saveAnnotations = () => { },
         scale = 1 } = props;
 
@@ -33,15 +34,20 @@ const KonvaCanvas = (props) => {
     const [isDrawing, setIsDrawing] = useState(false)
     const [rectangles, setRectangles] = useState([])
 
-    const [resizeBtnColor, setResizBtnColor] = useState("green")
+    const [resizeBtnColor, setResizBtnColor] = useState("yellow")
 
     const [selectedRectIndex, setSelectedRectIndex] = useState(-1)
     const [resizeHandle, setResizeHandle] = useState(null);
 
     const [enableEdit, setEnableEdit] = useState(false);
 
+    const [savedCoordinatesPresent, setSavedCoordinatesPresent] = useState(false);
+
 
     const startDrawingRectangle = () => {
+        //On Mouse down this event hits to start drawing the rectangle in the canvas.
+        //This saves the pointer's current position to start the draw. 
+        //This enables drawing if its not on edit mode.
 
         if (!enableDrawing) return;
 
@@ -60,6 +66,8 @@ const KonvaCanvas = (props) => {
     }
 
     const stopDrawingRectangle = () => {
+        //On releasing the mouse, we stop the draw in the canvas.
+        //And store the drawn rectangle's coordinates and dimensions for later use. 
 
         if (!enableDrawing) return;
         if (selectedRectIndex === -1 && newRect.current !== undefined) {
@@ -70,7 +78,11 @@ const KonvaCanvas = (props) => {
     }
 
     const drawRectangle = () => {
+        //Draw rectangle on the canvas.
+        //This function allows us to edit the already drawn rectangle and also drawn new rectangles.
+
         if (selectedRectIndex !== -1 && resizeHandle != null && enableEdit) {
+            //To edit existing rectangle
             const newRect = [...rectangles];
             const currentRect = newRect[selectedRectIndex];
 
@@ -100,7 +112,7 @@ const KonvaCanvas = (props) => {
             }
             setRectangles(newRect);
         } else {
-
+            //To draw new rectangle
             if (!isDrawing && !enableDrawing) return
 
             const stage = canvasRef.current.getStage();
@@ -128,9 +140,19 @@ const KonvaCanvas = (props) => {
 
     }
 
-    const handleRectClick = (i) => { setSelectedRectIndex(i) }
+    const handleRectClick = (i) => {
+        setSelectedRectIndex(i);
+        if (deleteRectBox) {
+            //Remove the drawn rectangle from the canvas.
+            rectangles.splice(i, 1)
+            setRectangles([...rectangles])
+            setSelectedRectIndex(-1)
+        }
+
+    }
 
     const renderRect = () => {
+        //Render the canvas to drawn all the rectangles on each component render
         return rectangles.map((eachItem, index) => {
             return (
                 <>
@@ -163,7 +185,9 @@ const KonvaCanvas = (props) => {
 
 
     useEffect(() => {
-        setRectangles([]);
+        if (!savedCoordinatesPresent) {
+            setRectangles([]);
+        }
         setIsDrawing(false);
         setResetCanvas()
     }, [resetCanvas])
@@ -171,7 +195,7 @@ const KonvaCanvas = (props) => {
     useEffect(() => {
         if (!enableEdit) {
             setSelectedRectIndex(-1)
-            setResizBtnColor("green")
+            setResizBtnColor("yellow")
         } else {
             setResizBtnColor("red")
         }
@@ -181,6 +205,37 @@ const KonvaCanvas = (props) => {
         saveAnnotations(imageUrl, rectangles);
     }, [rectangles])
 
+
+    useEffect(() => {
+        if (imageUrl) {
+            //Draw the already saved rectangle from local storage.
+            //This ensures the saved rectangle is not lost on navigating through the images.
+
+            const getRectangleInfo = JSON.parse(localStorage.getItem("boxCoordinates"))
+            if (getRectangleInfo) {
+
+
+                if (Object.keys(getRectangleInfo).includes(imageUrl.src)) {
+                    const rectBox = getRectangleInfo[`${imageUrl.src}`]
+
+                    const updatedRectBox = rectBox.map((eachItem) => {
+                        const x = eachItem.x1 ?? 0;
+                        const y = eachItem.y1 ?? 0;
+                        const width = eachItem.x2 - eachItem.x1;
+                        const height = eachItem.y2 - eachItem.y1;
+
+                        return { x, y, width, height, stroke: "blue", strokeWidth: "5" };
+                    })
+
+                    setSavedCoordinatesPresent(true);
+                    setRectangles(updatedRectBox)
+                } else {
+                    setSavedCoordinatesPresent(false);
+                }
+            }
+        }
+
+    }, [imageUrl])
 
     return (
         <div className='canvasContainer'>
